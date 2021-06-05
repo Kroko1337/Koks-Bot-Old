@@ -39,12 +39,16 @@ public class Events extends ListenerAdapter {
     public void onGuildInviteCreate(GuildInviteCreateEvent event) {
         final User user = event.getInvite().getInviter();
 
-        if (!event.getGuild().getName().contains("Public") && user != null && !user.isBot()) {
+        if (!event.getGuild().getName().contains("Public") && user != null && !user.isBot() && event.getInvite().getInviter() != null) {
             final String userName = user.getName();
             System.out.println("Invite created by " + userName);
 
             user.openPrivateChannel().complete().sendMessage("Please not create Invites!").queue();
-            event.getGuild().kick(user.getId(), "Invite Created!").complete();
+            try {
+                Main.staffAlert(event.getGuild().getMember(event.getInvite().getInviter()), "created a Invite!", event.getGuild());
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
             event.getInvite().delete().queue();
         }
         super.onGuildInviteCreate(event);
@@ -273,7 +277,7 @@ public class Events extends ListenerAdapter {
                 }
             }
         }
-        //event.getGuild().getTextChannelsByName("home", true).get(0).sendMessage(eb.build()).queue();
+        event.getGuild().getTextChannelsByName("\uD83D\uDC4B・welcome", true).get(0).sendMessage(eb.build()).queue();
         super.onGuildMemberJoin(event);
     }
 
@@ -282,7 +286,7 @@ public class Events extends ListenerAdapter {
         final EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("Bye " + event.getUser().getName() + " :c");
         eb.setThumbnail(event.getUser().getEffectiveAvatarUrl());
-        eb.setDescription("You are always welcome!");
+        eb.setDescription("Good bye!");
         eb.setColor(new Color(255, 0, 51));
         event.getGuild().getTextChannelsByName("\uD83D\uDC4B・welcome", true).get(0).sendMessage(eb.build()).queue();
         final Setting setting = Main.getSettings(event.getGuild());
